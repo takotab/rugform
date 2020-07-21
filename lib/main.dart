@@ -12,6 +12,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Startup Name Generator',
+      theme:
+          ThemeData(primaryColor: Colors.white, accentColor: Colors.blueAccent),
       home: RandomWords(),
     );
   }
@@ -40,7 +42,7 @@ class _RandomWordsState extends State<RandomWords> {
     final alreadySaved = _saved.contains(pair);
     var icon = Icon(
       alreadySaved ? Icons.favorite : Icons.favorite_border,
-      color: alreadySaved ? Colors.red : null,
+      color: alreadySaved ? ThemeData().accentColor : null,
     );
     return ListTile(
       title: Text(
