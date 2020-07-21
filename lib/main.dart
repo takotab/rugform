@@ -25,11 +25,11 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class _RandomWordsState {
+class _RandomWordsState extends State<RandomWords> {
   @override
   Widget build(BuildContext context) {
-    final wordpair = WordPair.random();
-    return Text(wordpair.asPascalCase);
+    final wordPair = WordPair.random();
+    return Text(wordPair.asPascalCase);
   }
 }
 
