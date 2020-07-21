@@ -2,6 +2,8 @@
 
 A new Flutter project.
 
+There are multiple branches that are all new experiments.
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
