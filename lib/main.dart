@@ -28,22 +28,12 @@ class MyApp extends StatelessWidget {
 class _RandomWordsState extends State<RandomWords> {
   final _suggestions = <WordPair>[];
   final _biggerFont = TextStyle(fontSize: 18.0)
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Startup Name Generator'),
-      )
-      body: _buildSuggestions(),
-    );
-  }
 
   Widget _buildSuggestions(){
   return ListView.builder(
     padding: EdgeInsets.all(16.0),
-    itemBuilder: /*1*/ (context, i){
+    itemBuilder: /*1*/ (context, i) {
       if (i.isOdd) return Divider(); /*2*/
-    }
     
     final index = i ~/ 2; /*3*/
     if (index >= _suggestions.length){
@@ -61,6 +51,17 @@ class _RandomWordsState extends State<RandomWords> {
       )
       );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Startup Name Generator'),
+      ),
+      body: _buildSuggestions(),
+    );
+  }
+
 }
 
 class RandomWords extends StatefulWidget {
