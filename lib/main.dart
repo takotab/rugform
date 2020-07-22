@@ -1,62 +1,70 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 
-class MyScaffold extends StatelessWidget {
-  MyScaffold({this.title});
+class MyAppBar extends StatelessWidget {
+  MyAppBar({this.title});
+
+  // Fields in a Widget subclass are always marked "final".
+
   final Widget title;
-  Widget buildRow(BuildContext context) {
-    return Row(children: <Widget>[
-      Container(
-          height: 50,
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          width: 200,
-          child: AppBar(
-            title: Text(
-              'Title',
-              style: TextStyle(color: ThemeData().accentColor, fontSize: 24.0),
-            ),
-            backgroundColor: ThemeData().backgroundColor,
-          )),
-      Expanded(
-        child: title,
-      ),
-      IconButton(
-        icon: Icon(Icons.search),
-        onPressed: null,
-        tooltip: 'Search',
-      ),
-      IconButton(
-        icon: Icon(Icons.access_alarm),
-        onPressed: null,
-      )
-    ]);
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
+    return Container(
+      height: 56.0, // in logical pixels
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      decoration: BoxDecoration(color: Colors.blue[500]),
+      // Row is a horizontal, linear layout.
+      child: Row(
+        // <Widget> is the type of items in the list.
+        children: <Widget>[
+          IconButton(
+            icon: Icon(Icons.menu),
+            tooltip: 'Navigation menu',
+            onPressed: null, // null disables the button
+          ),
+          // Expanded expands its child to fill the available space.
+          Expanded(
+            child: title,
+          ),
+          IconButton(
+            icon: Icon(Icons.search),
+            tooltip: 'Search',
+            onPressed: null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MyScaffold extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Material is a conceptual piece of paper on which the UI appears.
+    return Material(
+      // Column is a vertical, linear layout.
+      child: Column(
+        children: <Widget>[
+          MyAppBar(
             title: Text(
-          'app bar title',
-        )),
-        body: Column(children: <Widget>[buildRow(context), buildRow(context)]));
+              'Example title',
+              style: Theme.of(context).primaryTextTheme.headline6,
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Text('Hello, world!'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
 void main() {
   runApp(MaterialApp(
-      title: 'My app',
-      theme: ThemeData(
-          primaryColor: Colors.white,
-          accentColor: Colors.blueAccent,
-          backgroundColor: Colors.amber),
-      home: MyScaffold(
-        title: Text(
-          'Example title',
-          style: TextStyle(
-            color: Colors.black,
-          ),
-        ),
-      )));
+    title: 'My app', // used by the OS task switcher
+    home: MyScaffold(),
+  ));
 }
