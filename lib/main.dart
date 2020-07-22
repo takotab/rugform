@@ -6,9 +6,9 @@ class MyScaffold extends StatelessWidget {
     return AppBar(
       title: Text(
         'Title',
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: Colors.black87, fontSize: 24.0),
       ),
-      backgroundColor: Colors.white10,
+      backgroundColor: Colors.white38,
     );
   }
 }
