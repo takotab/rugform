@@ -3,18 +3,23 @@ import 'package:flutter/material.dart';
 class MyScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-        decoration: BoxDecoration(color: Colors.lightBlueAccent),
-        height: 20,
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        width: 20,
-        child: AppBar(
-          title: Text(
-            'Title',
-            style: TextStyle(color: Colors.black87, fontSize: 24.0),
-          ),
-          backgroundColor: Colors.white70,
-        ));
+    return Scaffold(
+        appBar: AppBar(
+            title: Text(
+          'app bar title',
+        )),
+        body: Container(
+            decoration: BoxDecoration(color: Colors.lightBlueAccent),
+            height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            width: 200,
+            child: AppBar(
+              title: Text(
+                'Title',
+                style: TextStyle(color: Colors.black87, fontSize: 24.0),
+              ),
+              backgroundColor: Colors.white70,
+            )));
   }
 }
 
