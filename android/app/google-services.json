@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "212256351620",
+    "firebase_url": "https://turbolamp.firebaseio.com",
+    "project_id": "turbolamp",
+    "storage_bucket": "turbolamp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:212256351620:android:108207bf394659fe56a9d1",
+        "android_client_info": {
+          "package_name": "com.example.rugform"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "212256351620-o8hchglg138gsde3plk2djkhgvcgm60r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfUs-F53fdWo4iyvUr8zpTtmfcJfVFPWw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "212256351620-o8hchglg138gsde3plk2djkhgvcgm60r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

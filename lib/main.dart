@@ -3,13 +3,41 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
+import "package:cloud_firestore/cloud_firestore.dart";
 
 void main() => runApp(MyApp());
+
+class Record {
+  final String name;
+  final int favorites;
+  final GeoPoint location;
+  final DocumentReference reference;
+
+  Record.fromSnapshot(DocumentSnapshot snapshot)
+      : this.fromMap(snapshot.data, reference: snapshot.reference);
+
+  @override
+  String toString() => "Record<$name:$favorites>";
+}
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    Widget _buildBody(BuildContext context) {
+      return StreamBuilder<QuerySnapshot>(
+        stream: Firestore.instance.collection('baby').snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return LinearProgressIndicator();
+
+          return _buildList(context, snapshot.data.documents);
+        },
+      );
+    }
+
+    Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
+      final record = Record.fromSnapshot(data);
+    }
+
     Column _buildButtonColumn(Color color, IconData icon, String label) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -89,6 +117,9 @@ class MyApp extends StatelessWidget {
       theme:
           ThemeData(primaryColor: Colors.white, accentColor: Colors.blueAccent),
       home: Scaffold(
+        appBar: AppBar(
+          title: Text('Camping Sites'),
+        ),
         body: ListView(
           children: [
             Image.asset(
