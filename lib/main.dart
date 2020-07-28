@@ -1,200 +1,164 @@
-// Copyright 2018 The Flutter team. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'package:flutter/material.dart';
-import "package:cloud_firestore/cloud_firestore.dart";
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_timer/bloc/bloc.dart';
+import 'package:flutter_timer/ticker.dart';
+
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 
 void main() => runApp(MyApp());
-
-class Record {
-  final String name;
-  final int favorites;
-  final GeoPoint location;
-  final DocumentReference reference;
-
-  Record.fromSnapshot(DocumentSnapshot snapshot)
-      : this.fromMap(snapshot.data, reference: snapshot.reference);
-
-  @override
-  String toString() => "Record<$name:$favorites>";
-}
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    Widget _buildBody(BuildContext context) {
-      return StreamBuilder<QuerySnapshot>(
-        stream: Firestore.instance.collection('baby').snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return LinearProgressIndicator();
-
-          return _buildList(context, snapshot.data.documents);
-        },
-      );
-    }
-
-    Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
-      final record = Record.fromSnapshot(data);
-    }
-
-    Column _buildButtonColumn(Color color, IconData icon, String label) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color),
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: color,
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    Widget textSection = Container(
-      padding: const EdgeInsets.all(32),
-      child: Text(
-        'Lake Oeschinen lies at the foot of the Blüemlisalp in the Bernese '
-        'Alps. Situated 1,578 meters above sea level, it is one of the '
-        'larger Alpine Lakes. A gondola ride from Kandersteg, followed by a '
-        'half-hour walk through pastures and pine forest, leads you to the '
-        'lake, which warms to 20 degrees Celsius in the summer. Activities '
-        'enjoyed here include rowing, and riding the summer toboggan run.',
-        softWrap: true,
-      ),
-    );
-    Widget titleSection = Container(
-      padding: const EdgeInsets.all(32),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    'Oeschinen Lake Campground',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Text(
-                  'Kandersteg, Switzerland',
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          FavoriteWidget()
-        ],
-      ),
-    );
-
-    Color color = Theme.of(context).primaryColor;
-    Widget buttonSection = Container(
-        child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildButtonColumn(color, Icons.call, 'CALL'),
-        _buildButtonColumn(color, Icons.near_me, 'Route'),
-        _buildButtonColumn(color, Icons.share, 'Share')
-      ],
-    ));
     return MaterialApp(
-      title: 'Startup Name Generator',
-      theme:
-          ThemeData(primaryColor: Colors.white, accentColor: Colors.blueAccent),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Camping Sites'),
-        ),
-        body: ListView(
-          children: [
-            Image.asset(
-              'images/lake.jpg',
-              width: 600,
-              height: 240,
-              fit: BoxFit.cover,
-            ),
-            titleSection,
-            buttonSection,
-            textSection
-          ],
-        ),
+      theme: ThemeData(
+        primaryColor: Color.fromRGBO(109, 234, 255, 1),
+        accentColor: Color.fromRGBO(72, 74, 126, 1),
+        brightness: Brightness.dark,
+      ),
+      title: 'Flutter Timer',
+      home: BlocProvider(
+        create: (context) => TimerBloc(ticker: Ticker()),
+        child: Timer(),
       ),
     );
   }
-
-  Column _buildButtonColumn(Color color, IconData icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: color),
-        Container(
-          margin: const EdgeInsets.only(top: 8),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: color,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
-class FavoriteWidget extends StatefulWidget {
-  @override
-  _FavoriteWidgetState createState() => _FavoriteWidgetState();
-}
-
-class _FavoriteWidgetState extends State<FavoriteWidget> {
-  bool _isFavorited = true;
-  int _favoriteCount = 10;
-  void _toggleFavorite() {
-    setState(() {
-      if (_isFavorited) {
-        _favoriteCount -= 1;
-        _isFavorited = false;
-      } else {
-        _favoriteCount += 1;
-        _isFavorited = true;
-      }
-    });
-  }
-
+class Timer extends StatelessWidget {
+  static const TextStyle timerTextStyle =
+      TextStyle(fontSize: 60, fontWeight: FontWeight.bold);
   @override
   Widget build(BuildContext context) {
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      Text('$_favoriteCount'),
-      Container(
-        padding: EdgeInsets.all(0),
-        child: IconButton(
-            icon: (_isFavorited ? Icon(Icons.star) : Icon(Icons.star_border)),
-            onPressed: _toggleFavorite,
-            color: Colors.red[500]),
+    var blocActionBuilder = BlocBuilder<TimerBloc, TimerState>(
+      buildWhen: (previousState, state) =>
+          state.runtimeType != previousState.runtimeType,
+      builder: (context, state) => Actions(),
+    );
+    var blocTimerBuilder = BlocBuilder<TimerBloc, TimerState>(
+      builder: (context, state) {
+        final String minutesStr =
+            ((state.duration / 60) % 60).floor().toString().padLeft(2, '0');
+        final String secondsStr =
+            (state.duration % 60).floor().toString().padLeft(2, '0');
+        return Text(
+          '$minutesStr:$secondsStr',
+          style: Timer.timerTextStyle,
+        );
+      },
+    );
+    return Scaffold(
+        appBar: AppBar(title: Text('Flutter Timer')),
+        body: Stack(children: [
+          Background(),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 100.0),
+                child: Center(
+                  child: blocTimerBuilder,
+                ),
+              ),
+              blocActionBuilder
+            ],
+          ),
+        ]));
+  }
+}
+
+class Actions extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: _mapStateToActionButtons(
+        timerBloc: BlocProvider.of<TimerBloc>(context),
       ),
-      SizedBox(
-          width: 18,
-          child: Container(
-            child: Text('$_favoriteCount'),
-          ))
-    ]);
+    );
+  }
+
+  List<Widget> _mapStateToActionButtons({
+    TimerBloc timerBloc,
+  }) {
+    final TimerState currentState = timerBloc.state;
+    if (currentState is TimerInitial) {
+      return [
+        FloatingActionButton(
+          child: Icon(Icons.play_arrow),
+          onPressed: () =>
+              timerBloc.add(TimerStarted(duration: currentState.duration)),
+        ),
+      ];
+    }
+    if (currentState is TimerRunInProgress) {
+      return [
+        FloatingActionButton(
+          child: Icon(Icons.pause),
+          onPressed: () => timerBloc.add(TimerPaused()),
+        ),
+        FloatingActionButton(
+          child: Icon(Icons.replay),
+          onPressed: () => timerBloc.add(TimerReset()),
+        ),
+      ];
+    }
+    if (currentState is TimerRunPause) {
+      return [
+        FloatingActionButton(
+          child: Icon(Icons.play_arrow),
+          onPressed: () => timerBloc.add(TimerResumed()),
+        ),
+        FloatingActionButton(
+          child: Icon(Icons.replay),
+          onPressed: () => timerBloc.add(TimerReset()),
+        ),
+      ];
+    }
+    if (currentState is TimerRunComplete) {
+      return [
+        FloatingActionButton(
+          child: Icon(Icons.replay),
+          onPressed: () => timerBloc.add(TimerReset()),
+        ),
+      ];
+    }
+    return [];
+  }
+}
+
+class Background extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return WaveWidget(
+      config: CustomConfig(
+        gradients: [
+          [
+            Color.fromRGBO(72, 74, 126, 1),
+            Color.fromRGBO(125, 170, 206, 1),
+            Color.fromRGBO(184, 189, 245, 0.7)
+          ],
+          [
+            Color.fromRGBO(72, 74, 126, 1),
+            Color.fromRGBO(125, 170, 206, 1),
+            Color.fromRGBO(172, 182, 219, 0.7)
+          ],
+          [
+            Color.fromRGBO(72, 73, 126, 1),
+            Color.fromRGBO(125, 170, 206, 1),
+            Color.fromRGBO(190, 238, 246, 0.7)
+          ],
+        ],
+        durations: [19440, 10800, 6000],
+        heightPercentages: [0.03, 0.01, 0.02],
+        gradientBegin: Alignment.bottomCenter,
+        gradientEnd: Alignment.topCenter,
+      ),
+      size: Size(double.infinity, double.infinity),
+      waveAmplitude: 25,
+      backgroundColor: Colors.blue[50],
+    );
   }
 }
