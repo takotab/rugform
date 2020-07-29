@@ -1,113 +1,37 @@
-// Copyright 2018 The Flutter team. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
+import 'package:flutter_weather/repositories/repositories.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_weather/simple_bloc_observer.dart';
+import 'package:bloc/bloc.dart';
+import 'package:flutter_weather/repositories/weather_api_client.dart';
+// https://bloclibrary.dev/#/flutterweathertutorial?id=combined-weather-temperature
+void main() {
+  Bloc.observer = SimpleBlocObserver();
 
-void main() => runApp(MyApp());
+  final WeatherRepository weatherRepository = WeatherRepository(
+    weatherApiClient: WeatherApiClient(
+      httpClient: http.Client(),
+    ),
+  );
 
-class MyApp extends StatelessWidget {
+  runApp(App(weatherRepository: weatherRepository));
+}
+
+class App extends StatelessWidget {
+  final WeatherRepository weatherRepository;
+
+  App({Key key, @required this.weatherRepository})
+      : assert(weatherRepository != null),
+        super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Startup Name Generator',
-      theme:
-          ThemeData(primaryColor: Colors.white, accentColor: Colors.blueAccent),
-      home: RandomWords(),
-    );
-  }
-}
-
-class _RandomWordsState extends State<RandomWords> {
-  final _suggestions = <WordPair>[];
-  final _biggerFont = TextStyle(fontSize: 18.0);
-  final _saved = Set<WordPair>();
-
-  Widget _buildSuggestions() {
-    return ListView.builder(
-        padding: EdgeInsets.all(16.0),
-        itemBuilder: /*1*/ (context, i) {
-          if (i.isOdd) return Divider(); /*2*/
-
-          final index = i ~/ 2; /*3*/
-          if (index >= _suggestions.length) {
-            _suggestions.addAll(generateWordPairs().take(10)); /*4*/
-          }
-          return _buildRow(_suggestions[index]);
-        });
-  }
-
-  Widget _buildRow(WordPair pair) {
-    final alreadySaved = _saved.contains(pair);
-    var icon = Icon(
-      alreadySaved ? Icons.favorite : Icons.favorite_border,
-      color: alreadySaved ? ThemeData().accentColor : null,
-    );
-    return ListTile(
-      title: Text(
-        pair.asPascalCase,
-        style: _biggerFont,
-      ),
-      trailing: icon,
-      onTap: () {
-        setState(() {
-          if (alreadySaved) {
-            _saved.remove(pair);
-          } else {
-            _saved.add(pair);
-          }
-        });
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Startup Name Generator'),
-        actions: [
-          IconButton(icon: Icon(Icons.list), onPressed: _pushSaved),
-        ],
-      ),
-      body: _buildSuggestions(),
-    );
-  }
-
-  void _pushSaved() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          final tiles = _saved.map(
-            (WordPair pair) {
-              return ListTile(
-                title: Text(
-                  pair.asPascalCase,
-                  style: _biggerFont,
-                ),
-              );
-            },
-          );
-          final divided = ListTile.divideTiles(
-            context: context,
-            tiles: tiles,
-          ).toList();
-
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('Saved Suggestions'),
-              actions: [],
-            ),
-            body: ListView(children: divided),
-          );
-        },
+      title: 'Flutter Weather',
+      home: BlocProvider(
+        create: (context) => WeatherBloc(weatherRepository: weatherRepository),
+        child: Weather(),
       ),
     );
   }
-}
-
-class RandomWords extends StatefulWidget {
-  @override
-  State<RandomWords> createState() => _RandomWordsState();
 }
