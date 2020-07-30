@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_weather/repositories/repositories.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_weather/simple_bloc_observer.dart';
 import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_weather/repositories/repositories.dart';
+import 'package:flutter_weather/simple_bloc_observer.dart';
+import 'package:flutter_weather/bloc/bloc.dart';
 import 'package:flutter_weather/repositories/weather_api_client.dart';
+import 'package:flutter_weather/widgets/widgets.dart';
+
 // https://bloclibrary.dev/#/flutterweathertutorial?id=combined-weather-temperature
 void main() {
   Bloc.observer = SimpleBlocObserver();
