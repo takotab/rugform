@@ -1,3 +1,5 @@
+import 'dart:js';
+
 import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +20,9 @@ void main() {
     ),
   );
 
-  runApp(App(weatherRepository: weatherRepository));
+  runApp(BlocProvider<ThemeBloc>(
+      create: (context) => ThemeBloc(),
+      child: App(weatherRepository: weatherRepository)));
 }
 
 class App extends StatelessWidget {
@@ -30,12 +34,15 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Weather',
-      home: BlocProvider(
-        create: (context) => WeatherBloc(weatherRepository: weatherRepository),
-        child: Weather(),
-      ),
-    );
+    return BlocBuilder<ThemeBloc, ThemeState>(builder: (context, state) {
+      return MaterialApp(
+        title: 'Flutter Weather',
+        home: BlocProvider(
+          create: (context) =>
+              WeatherBloc(weatherRepository: weatherRepository),
+          child: Weather(),
+        ),
+      );
+    });
   }
 }
