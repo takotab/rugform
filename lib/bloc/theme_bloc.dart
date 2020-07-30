@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import 'package:flutter_weather/models/models.dart';
+import 'package:flutter_weather/models/weather.dart';
 
 part 'theme_event.dart';
 part 'theme_state.dart';

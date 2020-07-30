@@ -5,7 +5,7 @@ abstract class ThemeEvent extends Equatable {
 }
 
 class WeatherChanged extends ThemeEvent {
-  final WheaterCondition condition;
+  final WeatherCondition condition;
 
   const WeatherChanged({@required this.condition}) : assert(condition != null);
   @override
