@@ -1,46 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
-
-import 'package:flutter_weather/repositories/repositories.dart';
-import 'package:flutter_weather/simple_bloc_observer.dart';
-import 'package:flutter_weather/bloc/bloc.dart';
-import 'package:flutter_weather/repositories/weather_api_client.dart';
-import 'package:flutter_weather/widgets/widgets.dart';
+import 'package:todos_repository_simple/todos_repository_simple.dart';
+import 'package:todos_app_core/todos_app_core.dart';
+import 'package:flutter_todos/localization.dart';
+import 'package:flutter_todos/blocs/blocs.dart';
+import 'package:flutter_todos/models/models.dart';
+import 'package:flutter_todos/screens/screens.dart';
 
 void main() {
+  // We can set a Bloc's observer to an instance of `SimpleBlocObserver`.
+  // This will allow us to handle all transitions and errors in SimpleBlocObserver.
   Bloc.observer = SimpleBlocObserver();
-
-  final WeatherRepository weatherRepository = WeatherRepository(
-    weatherApiClient: WeatherApiClient(
-      httpClient: http.Client(),
+  runApp(
+    BlocProvider(
+      create: (context) {
+        return TodosBloc(
+          todosRepository: const TodosRepositoryFlutter(
+            fileStorage: const FileStorage(
+              '__flutter_bloc_app__',
+              getApplicationDocumentsDirectory,
+            ),
+          ),
+        )..add(TodosLoaded());
+      },
+      child: TodosApp(),
     ),
   );
-
-  runApp(BlocProvider<ThemeBloc>(
-      create: (context) => ThemeBloc(),
-      child: App(weatherRepository: weatherRepository)));
 }
 
-class App extends StatelessWidget {
-  final WeatherRepository weatherRepository;
-
-  App({Key key, @required this.weatherRepository})
-      : assert(weatherRepository != null),
-        super(key: key);
-
+class TodosApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThemeBloc, ThemeState>(builder: (context, state) {
-      return MaterialApp(
-        title: 'Flutter Weather',
-        home: BlocProvider(
-          create: (context) =>
-              WeatherBloc(weatherRepository: weatherRepository),
-          child: Weather(),
-        ),
-      );
-    });
+    return MaterialApp(
+      title: FlutterBlocLocalizations().appTitle,
+      theme: ArchSampleTheme.theme,
+      localizationsDelegates: [
+        ArchSampleLocalizationsDelegate(),
+        FlutterBlocLocalizationsDelegate(),
+      ],
+      routes: {
+        ArchSampleRoutes.home: (context) {
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider<TabBloc>(
+                create: (context) => TabBloc(),
+              ),
+              BlocProvider<FilteredTodosBloc>(
+                create: (context) => FilteredTodosBloc(
+                  todosBloc: BlocProvider.of<TodosBloc>(context),
+                ),
+              ),
+              BlocProvider<StatsBloc>(
+                create: (context) => StatsBloc(
+                  todosBloc: BlocProvider.of<TodosBloc>(context),
+                ),
+              ),
+            ],
+            child: HomeScreen(),
+          );
+        },
+        ArchSampleRoutes.addTodo: (context) {
+          return AddEditScreen(
+            key: ArchSampleKeys.addTodoScreen,
+            onSave: (task, note) {
+              BlocProvider.of<TodosBloc>(context).add(
+                TodoAdded(Todo(task, note: note)),
+              );
+            },
+            isEditing: false,
+          );
+        },
+      },
+    );
   }
 }
