@@ -1,4 +1,4 @@
-name: flutter_todos
+name: flutter_firestore_todos
 description: A new Flutter project.
 
 environment:
@@ -6,27 +6,13 @@ environment:
 
 dependencies:
   meta: ^1.1.8
-  equatable: ^1.1.1
+  equatable: ^1.2.0
   flutter_bloc: ^6.0.1
   flutter:
     sdk: flutter
-
-dependency_overrides:
-  todos_app_core:
-    git:
-      url: https://github.com/felangel/flutter_architecture_samples
-      path: todos_app_core
-      ref: rxdart/0.23.0
-  todos_repository_core:
-    git:
-      url: https://github.com/felangel/flutter_architecture_samples
-      path: todos_repository_core
-      ref: rxdart/0.23.0
-  todos_repository_simple:
-    git:
-      url: https://github.com/felangel/flutter_architecture_samples
-      path: todos_repository_simple
-      ref: rxdart/0.23.0
-
+  todos_repository:
+    path: todos_repository
+  user_repository:
+    path: user_repository
 flutter:
   uses-material-design: true

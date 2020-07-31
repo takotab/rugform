@@ -1,78 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:todos_repository_simple/todos_repository_simple.dart';
-import 'package:todos_app_core/todos_app_core.dart';
-import 'package:flutter_todos/localization.dart';
-import 'package:flutter_todos/blocs/blocs.dart';
-import 'package:flutter_todos/models/models.dart';
-import 'package:flutter_todos/screens/screens.dart';
+import 'package:flutter_firestore_todos/blocs/authentication_bloc/bloc.dart';
+import 'package:todos_repository/todos_repository.dart';
+import 'package:flutter_firestore_todos/blocs/blocs.dart';
+import 'package:flutter_firestore_todos/screens/screens.dart';
+import 'package:user_repository/user_repository.dart';
 
 void main() {
-  // We can set a Bloc's observer to an instance of `SimpleBlocObserver`.
-  // This will allow us to handle all transitions and errors in SimpleBlocObserver.
   Bloc.observer = SimpleBlocObserver();
-  runApp(
-    BlocProvider(
-      create: (context) {
-        return TodosBloc(
-          todosRepository: const TodosRepositoryFlutter(
-            fileStorage: const FileStorage(
-              '__flutter_bloc_app__',
-              getApplicationDocumentsDirectory,
-            ),
-          ),
-        )..add(TodosLoaded());
-      },
-      child: TodosApp(),
-    ),
-  );
+  runApp(TodosApp());
 }
 
 class TodosApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: FlutterBlocLocalizations().appTitle,
-      theme: ArchSampleTheme.theme,
-      localizationsDelegates: [
-        ArchSampleLocalizationsDelegate(),
-        FlutterBlocLocalizationsDelegate(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthenticationBloc>(
+          create: (context) {
+            return AuthenticationBloc(
+              userRepository: FirebaseUserRepository(),
+            )..add(AppStarted());
+          },
+        ),
+        BlocProvider<TodosBloc>(
+          create: (context) {
+            return TodosBloc(
+              todosRepository: FirebaseTodosRepository(),
+            )..add(LoadTodos());
+          },
+        )
       ],
-      routes: {
-        ArchSampleRoutes.home: (context) {
-          return MultiBlocProvider(
-            providers: [
-              BlocProvider<TabBloc>(
-                create: (context) => TabBloc(),
-              ),
-              BlocProvider<FilteredTodosBloc>(
-                create: (context) => FilteredTodosBloc(
-                  todosBloc: BlocProvider.of<TodosBloc>(context),
-                ),
-              ),
-              BlocProvider<StatsBloc>(
-                create: (context) => StatsBloc(
-                  todosBloc: BlocProvider.of<TodosBloc>(context),
-                ),
-              ),
-            ],
-            child: HomeScreen(),
-          );
+      child: MaterialApp(
+        title: 'Firestore Todos',
+        routes: {
+          '/': (context) {
+            return BlocBuilder<AuthenticationBloc, AuthenticationState>(
+              builder: (context, state) {
+                if (state is Authenticated) {
+                  return MultiBlocProvider(
+                    providers: [
+                      BlocProvider<TabBloc>(
+                        create: (context) => TabBloc(),
+                      ),
+                      BlocProvider<FilteredTodosBloc>(
+                        create: (context) => FilteredTodosBloc(
+                          todosBloc: BlocProvider.of<TodosBloc>(context),
+                        ),
+                      ),
+                      BlocProvider<StatsBloc>(
+                        create: (context) => StatsBloc(
+                          todosBloc: BlocProvider.of<TodosBloc>(context),
+                        ),
+                      ),
+                    ],
+                    child: HomeScreen(),
+                  );
+                }
+                if (state is Unauthenticated) {
+                  return Center(
+                    child: Text('Could not authenticate with Firestore'),
+                  );
+                }
+                return Center(child: CircularProgressIndicator());
+              },
+            );
+          },
+          '/addTodo': (context) {
+            return AddEditScreen(
+              onSave: (task, note) {
+                BlocProvider.of<TodosBloc>(context).add(
+                  AddTodo(Todo(task, note: note)),
+                );
+              },
+              isEditing: false,
+            );
+          },
         },
-        ArchSampleRoutes.addTodo: (context) {
-          return AddEditScreen(
-            key: ArchSampleKeys.addTodoScreen,
-            onSave: (task, note) {
-              BlocProvider.of<TodosBloc>(context).add(
-                TodoAdded(Todo(task, note: note)),
-              );
-            },
-            isEditing: false,
-          );
-        },
-      },
+      ),
     );
   }
 }
